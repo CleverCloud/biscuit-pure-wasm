@@ -16,13 +16,17 @@ pub(crate) fn make_rng() -> rand::rngs::StdRng {
 }
 
 unsafe extern "C" {
+    #[cfg(feature = "print")]
     pub fn print(ptr: *const u8, len: usize);
 }
 
 #[macro_export]
 macro_rules! print_wasm {
     ($($args:tt)*) => {
-        let msg = format!($($args)*);
-        unsafe { print(msg.as_ptr(), msg.len()) };
+        #[cfg(feature = "print")]
+        {
+            let msg = format!($($args)*);
+            unsafe { $crate::print(msg.as_ptr(), msg.len()) };
+        }
     };
 }
