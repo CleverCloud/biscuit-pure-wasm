@@ -4,7 +4,6 @@ use crate::{make_rng, wasm_export};
 use biscuit_auth::datalog::SymbolTable;
 use biscuit_auth::{Biscuit, BiscuitBuilder, KeyPair, PrivateKey};
 
-
 // create a new biscuit builder
 // Output:
 // returnArea { data, data_len=0, is_ok = 1 }
@@ -45,9 +44,13 @@ wasm_export!(
 // data is the pointer to the error message allocated in the wasm memory
 // data_len is the length of the error message in bytes
 wasm_export!(
-    fn biscuit_builder_build_with_private_key(builder: Box<BiscuitBuilder>, private_root_key: &PrivateKey) -> Result<Box<Biscuit>, biscuit_auth::error::Token> {
+    fn biscuit_builder_build_with_private_key(
+        builder: Box<BiscuitBuilder>,
+        private_root_key: &PrivateKey,
+    ) -> Result<Box<Biscuit>, biscuit_auth::error::Token> {
         let root_keypair = KeyPair::from(private_root_key);
-        let biscuit = builder.build_with_rng(&root_keypair, SymbolTable::default(), &mut make_rng())?;
+        let biscuit =
+            builder.build_with_rng(&root_keypair, SymbolTable::default(), &mut make_rng())?;
 
         Ok(Box::new(biscuit))
     }
@@ -69,8 +72,12 @@ wasm_export!(
 // data is the pointer to the error message allocated in the wasm memory
 // data_len is the length of the error message in bytes
 wasm_export!(
-    fn biscuit_builder_build_with_key_pair(builder: Box<BiscuitBuilder>, root_keypair: &KeyPair) -> Result<Box<Biscuit>, biscuit_auth::error::Token> {
-        let biscuit = builder.build_with_rng(root_keypair, SymbolTable::default(), &mut make_rng())?;
+    fn biscuit_builder_build_with_key_pair(
+        builder: Box<BiscuitBuilder>,
+        root_keypair: &KeyPair,
+    ) -> Result<Box<Biscuit>, biscuit_auth::error::Token> {
+        let biscuit =
+            builder.build_with_rng(root_keypair, SymbolTable::default(), &mut make_rng())?;
 
         Ok(Box::new(biscuit))
     }
@@ -92,11 +99,13 @@ wasm_export!(
 // data is the pointer to the error message allocated in the wasm memory
 // data_len is the length of the error message in bytes
 wasm_export!(
-    fn biscuit_builder_add_code(builder: &mut BiscuitBuilder, code: &str) -> Result<(), biscuit_auth::error::Token> {
+    fn biscuit_builder_add_code(
+        builder: &mut BiscuitBuilder,
+        code: &str,
+    ) -> Result<(), biscuit_auth::error::Token> {
         in_place_apply(builder, |builder| builder.code(code))
     }
 );
-
 
 // set the root key id
 // Input:
@@ -110,7 +119,10 @@ wasm_export!(
 // data is 0 because no data is returned
 // data_len is 0 because no data is returned
 wasm_export!(
-    fn biscuit_builder_set_root_key_id(builder: &mut BiscuitBuilder, root_key_id: u32) -> Result<(), biscuit_auth::error::Token> {
+    fn biscuit_builder_set_root_key_id(
+        builder: &mut BiscuitBuilder,
+        root_key_id: u32,
+    ) -> Result<(), biscuit_auth::error::Token> {
         in_place_apply_no_return(builder, |builder| builder.root_key_id(root_key_id));
         Ok(())
     }

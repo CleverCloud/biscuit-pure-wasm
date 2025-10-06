@@ -3,7 +3,6 @@ use crate::wasm_export;
 use crate::wasm_result::WasmResult;
 use biscuit_auth::{Authorizer, AuthorizerBuilder, Biscuit};
 
-
 // create a new authorizer builder
 // Output:
 // returnArea { data, data_len=0, is_ok = 1 }
@@ -45,7 +44,10 @@ wasm_export!(
 // data is the pointer to the authorizer error message allocated in the wasm memory
 // data_len is the length of the error message
 wasm_export!(
-    fn authorizer_builder_build(builder: Box<AuthorizerBuilder>, token: &Biscuit) -> Result<Box<Authorizer>, biscuit_auth::error::Token> {
+    fn authorizer_builder_build(
+        builder: Box<AuthorizerBuilder>,
+        token: &Biscuit,
+    ) -> Result<Box<Authorizer>, biscuit_auth::error::Token> {
         let authorizer = builder.build(token)?;
         Ok(Box::new(authorizer))
     }
@@ -66,7 +68,10 @@ wasm_export!(
 // data is the pointer to the authorizer error message allocated in the wasm memory
 // data_len is the length of the error message
 wasm_export!(
-    fn authorizer_builder_add_code(builder: &mut AuthorizerBuilder, code: &str) -> Result<(), biscuit_auth::error::Token> {
+    fn authorizer_builder_add_code(
+        builder: &mut AuthorizerBuilder,
+        code: &str,
+    ) -> Result<(), biscuit_auth::error::Token> {
         in_place_apply(builder, |builder| builder.code(code))
     }
 );

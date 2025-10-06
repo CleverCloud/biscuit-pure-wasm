@@ -1,7 +1,7 @@
-use crate::wasm_result::WasmResult;
 use crate::wasm_export;
-use biscuit_auth::datalog::RunLimits;
+use crate::wasm_result::WasmResult;
 use biscuit_auth::Authorizer;
+use biscuit_auth::datalog::RunLimits;
 use std::time::Duration;
 
 // create a new authorizer builder
@@ -36,7 +36,10 @@ wasm_export!(
 // data is the pointer to the error message
 // data_len is the length of the error message
 wasm_export!(
-    fn authorizer_authorize(authorizer: &mut Authorizer,run_limits: Box<RunLimits>) -> Result<u32, biscuit_auth::error::Token> {
+    fn authorizer_authorize(
+        authorizer: &mut Authorizer,
+        run_limits: Box<RunLimits>,
+    ) -> Result<u32, biscuit_auth::error::Token> {
         Ok(authorizer.authorize_with_limits(*run_limits)? as u32)
     }
 );
