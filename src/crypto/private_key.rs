@@ -7,10 +7,10 @@ use core::str::FromStr;
 // Input:
 // keypair is a pointer to the private key allocated in the wasm memory
 // Output:
-// returnArea { data, data_len=0, is_ok = 1 }
+// returnArea { data, data_len=0, kind=Ok }
 // data is 0
 // data_len is 0
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn private_key_drop(private_key: Box<PrivateKey>) {
         drop(private_key);
@@ -21,10 +21,10 @@ wasm_export!(
 // Input:
 // private_key is a pointer to the private key allocated in the wasm memory
 // Output:
-// returnArea { data, data_len, is_ok = 1 }
+// returnArea { data, data_len, kind=Ok }
 // data is the private key in hex format
 // data_len is the length of the hexadecimal representation of the private key in bytes
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn private_key_to_hex(private_key: &PrivateKey) -> String {
         private_key.to_prefixed_string()
@@ -35,14 +35,14 @@ wasm_export!(
 // Input:
 // data is the private key in hex format
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 1
+// if kind = Ok
 // data is a pointer to the private key allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 0
-// data is the pointer to the error message allocated in the wasm memory
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message in bytes
 wasm_export!(
     fn private_key_from_hex(data: &str) -> Result<Box<PrivateKey>, biscuit_auth::error::Format> {

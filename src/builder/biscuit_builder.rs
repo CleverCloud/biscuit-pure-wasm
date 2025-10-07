@@ -6,10 +6,10 @@ use biscuit_auth::{Biscuit, BiscuitBuilder, KeyPair, PrivateKey};
 
 // create a new biscuit builder
 // Output:
-// returnArea { data, data_len=0, is_ok = 1 }
+// returnArea { data, data_len=0, kind=Ok }
 // data is a pointer to the biscuit builder allocated in the wasm memory
 // data_len is 0 because of the opaque type
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn biscuit_builder_new() -> Box<BiscuitBuilder> {
         Box::new(BiscuitBuilder::new())
@@ -18,10 +18,10 @@ wasm_export!(
 
 // drop the biscuit builder
 // Output:
-// returnArea { data, data_len=0, is_ok = 1 }
+// returnArea { data, data_len=0, kind=Ok }
 // data is 0
 // data_len is 0 because of the opaque type
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn biscuit_builder_drop(builder: Box<BiscuitBuilder>) {
         drop(builder);
@@ -34,14 +34,14 @@ wasm_export!(
 // private_root_key: the private key pointer to the allocated wasm memory used as the root key
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 1
+// if kind = Ok
 // data is a pointer to the biscuit allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 0
-// data is the pointer to the error message allocated in the wasm memory
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message allocated in the wasm memory (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message in bytes
 wasm_export!(
     fn biscuit_builder_build_with_private_key(
@@ -62,14 +62,14 @@ wasm_export!(
 // root_keypair: the keypair pointer to the allocated wasm memory used as the root key
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 1
+// if kind = Ok
 // data is a pointer to the biscuit allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 0
-// data is the pointer to the error message allocated in the wasm memory
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message allocated in the wasm memory (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message in bytes
 wasm_export!(
     fn biscuit_builder_build_with_key_pair(
@@ -89,14 +89,14 @@ wasm_export!(
 // code: the code to add
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 1
+// if kind = Ok
 // data is a pointer to the biscuit builder allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 0
-// data is the pointer to the error message allocated in the wasm memory
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message allocated in the wasm memory (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message in bytes
 wasm_export!(
     fn biscuit_builder_add_code(
@@ -113,9 +113,9 @@ wasm_export!(
 // root_key_id: the root key id
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 // data is 0 because no data is returned
 // data_len is 0 because no data is returned
 wasm_export!(
@@ -133,11 +133,11 @@ wasm_export!(
 // builder: the biscuit builder pointer to the allocated wasm memory
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// data is a pointer to the biscuit builder allocated in the wasm memory
+// data is a pointer to the string allocated in the wasm memory
 // data_len is the length of the string in bytes
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn biscuit_builder_to_string(builder: &BiscuitBuilder) -> String {
         builder.to_string()

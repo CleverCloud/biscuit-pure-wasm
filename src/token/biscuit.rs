@@ -4,10 +4,10 @@ use biscuit_auth::{Authorizer, Biscuit, BiscuitBuilder, PublicKey};
 
 // create a new biscuit builder
 // Output:
-// returnArea { data, data_len=0, is_ok = 1 }
+// returnArea { data, data_len=0, kind=Ok }
 // data is a pointer to the biscuit builder allocated in the wasm memory
 // data_len is 0 because of the opaque type
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn biscuit_builder() -> Box<BiscuitBuilder> {
         Box::new(BiscuitBuilder::new())
@@ -19,14 +19,14 @@ wasm_export!(
 // biscuit: a pointer to a biscuit allocated in the wasm memory
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 0
+// if kind = Ok
 // data is a pointer to the biscuit authorizer allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 1
-// data is the pointer to the error message
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message
 wasm_export!(
     fn biscuit_authorizer(
@@ -42,14 +42,14 @@ wasm_export!(
 // root_public_key: a pointer to the root public key allocated in the wasm memory
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 0
+// if kind = Ok
 // data is a pointer to the biscuit allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 1
-// data is the pointer to the error message
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message
 wasm_export!(
     fn biscuit_from_bytes(
@@ -66,14 +66,14 @@ wasm_export!(
 // root_public_key: a pointer to the root public key allocated in the wasm memory
 //
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 0
+// if kind = Ok
 // data is a pointer to the biscuit allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 1
-// data is the pointer to the error message
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message
 wasm_export!(
     fn biscuit_from_base64(
@@ -90,11 +90,11 @@ wasm_export!(
 // Input:
 // biscuit: a pointer to a biscuit allocated in the wasm memory
 // Output:
-// returnArea { data=0, data_len=0, is_ok=1 }
+// returnArea { data=0, data_len=0, kind=Ok }
 //
 // data is 0 because no data is returned
 // data_len is 0 because no data is returned
-// is_ok is 1 because the function never fails
+// kind is Ok because the function never fails
 wasm_export!(
     fn biscuit_drop(biscuit: Box<Biscuit>) {
         drop(biscuit);
@@ -105,14 +105,14 @@ wasm_export!(
 // Input:
 // biscuit: a pointer to a biscuit allocated in the wasm memory
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 0
-// data is the pointer to the base64 encoded bytes allocated in the wasm memory
-// data_len is the length of the base64 encoded bytes
+// if kind = Ok
+// data is the pointer to the base64 encoded string allocated in the wasm memory
+// data_len is the length of the base64 encoded string
 //
-// if is_ok = 1
-// data is the pointer to the error message
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message
 wasm_export!(
     fn biscuit_to_base64(biscuit: &Biscuit) -> Result<String, biscuit_auth::error::Token> {
@@ -124,14 +124,14 @@ wasm_export!(
 // Input:
 // biscuit: a pointer to a biscuit allocated in the wasm memory
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 0
+// if kind = Ok
 // data is the pointer to the bytes allocated in the wasm memory
 // data_len is the length of the bytes
 //
-// if is_ok = 1
-// data is the pointer to the error message
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message
 wasm_export!(
     fn biscuit_to_bytes(biscuit: &Biscuit) -> Result<Vec<u8>, biscuit_auth::error::Token> {

@@ -7,28 +7,28 @@ use biscuit_auth::PublicKey;
 // Input:
 // private_key is a pointer to the public key allocated in the wasm memory
 // Output:
-// returnArea { data, data_len, is_ok = 1 }
-// data is the private key in hex format
-// data_len is the length of the hexadecimal representation of the private key in bytes
-// is_ok is 1 because the function never fails
+// returnArea { data, data_len, kind=Ok }
+// data is the public key in hex format
+// data_len is the length of the hexadecimal representation of the public key in bytes
+// kind is Ok because the function never fails
 wasm_export!(
     fn public_key_to_hex(public_key: &PublicKey) -> String {
         public_key.to_string()
     }
 );
 
-// Create a private key from a hexadecimal string
+// Create a public key from a hexadecimal string
 // Input:
-// data is the private key in hex format
+// data is the public key in hex format
 // Output:
-// returnArea { data, data_len, is_ok }
+// returnArea { data, data_len, kind }
 //
-// if is_ok = 1
-// data is a pointer to the private key allocated in the wasm memory
+// if kind = Ok
+// data is a pointer to the public key allocated in the wasm memory
 // data_len is 0 because of the opaque type
 //
-// if is_ok = 0
-// data is the pointer to the error message allocated in the wasm memory
+// if kind = ErrBiscuit or kind = ErrSerialization
+// data is the pointer to the error message (JSON when ErrBiscuit, plain string when ErrSerialization)
 // data_len is the length of the error message in bytes
 wasm_export!(
     fn public_key_from_hex(
