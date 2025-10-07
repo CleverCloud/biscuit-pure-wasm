@@ -1,4 +1,5 @@
 use crate::wasm_result::WasmResult;
+use alloc::alloc;
 use std::mem;
 
 #[unsafe(no_mangle)]
@@ -7,9 +8,7 @@ use std::mem;
 /// - `size`: allocated size in bytes
 /// - `align`: alignment of the allocated area
 pub fn malloc(size: usize, align: usize) -> *mut u8 {
-    unsafe {
-        alloc::alloc::alloc(alloc::alloc::Layout::from_size_align(size, align).unwrap())
-    }
+    unsafe { alloc::alloc(alloc::Layout::from_size_align_unchecked(size, align)) }
 }
 #[unsafe(no_mangle)]
 /// Frees a previously allocated area
@@ -18,9 +17,7 @@ pub fn malloc(size: usize, align: usize) -> *mut u8 {
 /// - `size`: allocated size
 /// - `align`: alignment of the allocated area
 pub fn free(ptr: *mut u8, size: usize, align: usize) {
-    unsafe {
-        alloc::alloc::dealloc(ptr, alloc::alloc::Layout::from_size_align(size, align).unwrap())
-    }
+    unsafe { alloc::dealloc(ptr, alloc::Layout::from_size_align_unchecked(size, align)) }
 }
 
 #[unsafe(no_mangle)]

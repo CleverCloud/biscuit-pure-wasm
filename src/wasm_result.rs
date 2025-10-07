@@ -22,8 +22,8 @@ pub struct WasmResult {
 #[repr(C)]
 pub enum ResultKind {
     Ok = 0,
-    Biscuit = 1,
-    Serialization = 2
+    ErrBiscuit = 1,
+    ErrSerialization = 2,
 }
 
 /// Trait to data into WasmResult
@@ -82,18 +82,16 @@ impl<T: IntoWasmResult, E: Serialize> IntoWasmResult for Result<T, E> {
     fn into_wasm_result(self, ret: &mut WasmResult) {
         match self {
             // Return the data as bytes
-            Ok(ok) => {
-                ok.into_wasm_result(ret)
-            }
+            Ok(ok) => ok.into_wasm_result(ret),
             // Return the error as a string
             Err(err) => {
                 let msg = match serde_json::to_string(&err) {
                     Ok(msg) => {
-                        ret.kind = ResultKind::Biscuit;
+                        ret.kind = ResultKind::ErrBiscuit;
                         msg
-                    },
+                    }
                     Err(serialization_error) => {
-                        ret.kind = ResultKind::Serialization;
+                        ret.kind = ResultKind::ErrSerialization;
                         serialization_error.to_string()
                     }
                 };

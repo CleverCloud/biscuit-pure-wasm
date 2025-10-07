@@ -1,12 +1,7 @@
-use crate::builder::Builder;
+use crate::builder::in_place_apply;
 use crate::wasm_export;
 use crate::wasm_result::WasmResult;
 use biscuit_auth::{Authorizer, AuthorizerBuilder, Biscuit};
-
-// wrapper around the biscuit builder to allow using the builder pattern without reallocating the builder every time
-// refcell is used to perform interior mutability (safe because the builder is not exposed to the user)
-pub type AuthorizerBuilderWrapper = Builder<AuthorizerBuilder>;
-
 
 // create a new authorizer builder
 // Output:
@@ -15,8 +10,8 @@ pub type AuthorizerBuilderWrapper = Builder<AuthorizerBuilder>;
 // data_len is 0 because of the opaque type
 // is_ok is 1 because the function never fails
 wasm_export!(
-    fn authorizer_builder_new() -> Box<AuthorizerBuilderWrapper> {
-        Box::new(AuthorizerBuilder::new().into())
+    fn authorizer_builder_new() -> Box<AuthorizerBuilder> {
+        Box::new(AuthorizerBuilder::new())
     }
 );
 
@@ -29,7 +24,7 @@ wasm_export!(
 // data_len is 0
 // is_ok is 1 because the function never fails
 wasm_export!(
-    fn authorizer_builder_drop(builder: Box<AuthorizerBuilderWrapper>) {
+    fn authorizer_builder_drop(builder: Box<AuthorizerBuilder>) {
         drop(builder);
     }
 );
@@ -49,8 +44,11 @@ wasm_export!(
 // data is the pointer to the authorizer error message allocated in the wasm memory
 // data_len is the length of the error message
 wasm_export!(
-    fn authorizer_builder_build(builder: Box<AuthorizerBuilderWrapper>, token: &Biscuit) -> Result<Box<Authorizer>, biscuit_auth::error::Token> {
-        let authorizer = builder.0.build(token)?;
+    fn authorizer_builder_build(
+        builder: Box<AuthorizerBuilder>,
+        token: &Biscuit,
+    ) -> Result<Box<Authorizer>, biscuit_auth::error::Token> {
+        let authorizer = builder.build(token)?;
         Ok(Box::new(authorizer))
     }
 );
@@ -70,7 +68,10 @@ wasm_export!(
 // data is the pointer to the authorizer error message allocated in the wasm memory
 // data_len is the length of the error message
 wasm_export!(
-    fn authorizer_builder_add_code(builder: &mut AuthorizerBuilderWrapper, code: &str) -> Result<(), biscuit_auth::error::Token> {
-        builder.apply(|builder|builder.code(code))
+    fn authorizer_builder_add_code(
+        builder: &mut AuthorizerBuilder,
+        code: &str,
+    ) -> Result<(), biscuit_auth::error::Token> {
+        in_place_apply(builder, |builder| builder.code(code))
     }
 );
