@@ -95,7 +95,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "biscuit-wasm-go"
+name = "biscuit-wasm-shim"
 version = "0.1.0"
 dependencies = [
  "biscuit-auth",
