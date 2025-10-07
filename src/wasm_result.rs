@@ -7,16 +7,16 @@ use std::mem;
 #[repr(C)]
 pub struct WasmResult {
     /// Pointer to the bytes
-    ptr: *const u8,
+    pub ptr: *const u8,
     /// Length of bytes
     ///
     /// - length is 0 when ptr is Box<T>
     /// - length != 0 when ptr is String or Vec<u8>
-    len: usize,
+    pub len: usize,
     /// Whether the bytes are about data or an error
     /// true: Box<T>
     /// false: String
-    kind: ResultKind,
+    pub kind: ResultKind,
 }
 
 #[repr(C)]
@@ -30,6 +30,31 @@ pub enum ResultKind {
 pub trait IntoWasmResult {
     fn into_wasm_result(self, ret: &mut WasmResult);
 }
+
+impl IntoWasmResult for WasmResult {
+    fn into_wasm_result(self, ret: &mut WasmResult) {
+        *ret = self;
+    }
+}
+
+impl IntoWasmResult for () {
+    fn into_wasm_result(self, ret: &mut WasmResult) {
+        ret.ptr = std::ptr::null();
+        ret.len = 0;
+        ret.kind = ResultKind::Ok;
+    }
+}
+
+impl IntoWasmResult for u32 {
+    fn into_wasm_result(self, ret: &mut WasmResult) {
+        // Box<T> is a pointer to the data
+        // T is consumed by the Box creation
+        ret.ptr = self as *const u8;
+        ret.len = 0;
+        ret.kind = ResultKind::Ok;
+    }
+}
+
 impl IntoWasmResult for String {
     fn into_wasm_result(self, ret: &mut WasmResult) {
         ret.ptr = self.as_ptr();
@@ -60,23 +85,14 @@ impl<T> IntoWasmResult for Box<T> {
     }
 }
 
-impl IntoWasmResult for u32 {
+/*impl<T: IntoWasmResult> IntoWasmResult for Option<T> {
     fn into_wasm_result(self, ret: &mut WasmResult) {
-        // Box<T> is a pointer to the data
-        // T is consumed by the Box creation
-        ret.ptr = self as *const u8;
-        ret.len = 0;
-        ret.kind = ResultKind::Ok;
+        match self {
+            Some(val) => val.into_wasm_result(ret),
+            None => ret.capture(()),
+        }
     }
-}
-
-impl IntoWasmResult for () {
-    fn into_wasm_result(self, ret: &mut WasmResult) {
-        ret.ptr = std::ptr::null();
-        ret.len = 0;
-        ret.kind = ResultKind::Ok;
-    }
-}
+}*/
 
 impl<T: IntoWasmResult, E: Serialize> IntoWasmResult for Result<T, E> {
     fn into_wasm_result(self, ret: &mut WasmResult) {

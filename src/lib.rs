@@ -18,6 +18,16 @@ pub(crate) fn make_rng() -> rand::rngs::StdRng {
 unsafe extern "C" {
     #[cfg(feature = "print")]
     pub fn print(ptr: *const u8, len: usize);
+    #[cfg(feature = "ffi")]
+    pub fn extern_func(
+        symbols_ptr: *const u8,
+        left_ptr: *const u8,
+        left_len: usize,
+        right_ptr: *const u8,
+        right_len: usize,
+        user_data: u64,
+        ret: &mut wasm_result::WasmResult,
+    );
 }
 
 #[macro_export]
