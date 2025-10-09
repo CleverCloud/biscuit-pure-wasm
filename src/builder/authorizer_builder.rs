@@ -1,3 +1,4 @@
+use crate::print_wasm;
 use crate::builder::in_place_apply;
 use crate::wasm_export;
 #[cfg(feature = "ffi")]
@@ -122,6 +123,13 @@ wasm_export!(
 );
 
 #[cfg(feature = "ffi")]
+wasm_export!(
+    fn symbol_table_insert(table: &mut TemporarySymbolTable, s: &str) -> u64 {
+        table.insert(s)
+    }
+);
+
+#[cfg(feature = "ffi")]
 fn call_extern(
     left: builder::Term,
     right: Option<builder::Term>,
@@ -139,6 +147,7 @@ fn call_extern(
     let left = token_term_to_proto_id(&left.to_datalog(&mut tmp_table))
         .encode_to_vec()
         .into_boxed_slice();
+    print_wasm!("{left:?}");
     let right = right.map(|right| {
         token_term_to_proto_id(&right.to_datalog(&mut tmp_table))
             .encode_to_vec()
@@ -146,7 +155,7 @@ fn call_extern(
     });
     unsafe {
         crate::extern_func(
-            &tmp_table as *const _ as *const _,
+            &mut tmp_table as *mut _ as *mut _,
             left.as_ptr(),
             left.len(),
             right.as_ref().map_or(0 as *const _, |r| r.as_ptr()),
@@ -156,6 +165,7 @@ fn call_extern(
         );
     }
     let bytes = unsafe { core::slice::from_raw_parts(ret.ptr, ret.len) };
+    print_wasm!("{ret:#?}");
     match ret.kind {
         ResultKind::Ok => {
             let result = schema::Term::decode(bytes);

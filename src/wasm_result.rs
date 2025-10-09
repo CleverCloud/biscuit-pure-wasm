@@ -5,6 +5,7 @@ use std::mem;
 /// which returns a Result<Box<T>, E>
 /// where E implements ToString
 #[repr(C)]
+#[derive(Debug)]
 pub struct WasmResult {
     /// Pointer to the bytes
     pub ptr: *const u8,
@@ -20,6 +21,7 @@ pub struct WasmResult {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub enum ResultKind {
     Ok = 0,
     ErrBiscuit = 1,
@@ -45,7 +47,7 @@ impl IntoWasmResult for () {
     }
 }
 
-impl IntoWasmResult for u32 {
+impl IntoWasmResult for u64 {
     fn into_wasm_result(self, ret: &mut WasmResult) {
         // Box<T> is a pointer to the data
         // T is consumed by the Box creation
