@@ -115,7 +115,7 @@ wasm_export!(
             },
             None => WasmResult {
                 kind: ResultKind::Ok,
-                ptr: 0 as *const _,
+                ptr: core::ptr::null(),
                 len: 0,
             },
         }
@@ -144,35 +144,39 @@ fn call_extern(
     };
     let base_table = SymbolTable::default();
     let mut tmp_table = TemporarySymbolTable::new(&base_table);
+    print_wasm!("{left:?} {right:?}");
     let left = token_term_to_proto_id(&left.to_datalog(&mut tmp_table))
         .encode_to_vec()
         .into_boxed_slice();
-    print_wasm!("{left:?}");
     let right = right.map(|right| {
         token_term_to_proto_id(&right.to_datalog(&mut tmp_table))
             .encode_to_vec()
             .into_boxed_slice()
     });
+    print_wasm!("{left:?} {right:?}");
     unsafe {
         crate::extern_func(
             &mut tmp_table as *mut _ as *mut _,
             left.as_ptr(),
             left.len(),
-            right.as_ref().map_or(0 as *const _, |r| r.as_ptr()),
+            right.as_ref().map_or(core::ptr::null(), |r| r.as_ptr()),
             right.as_ref().map_or(0, |r| r.len()),
             user_data,
             &mut ret,
         );
     }
-    let bytes = unsafe { core::slice::from_raw_parts(ret.ptr, ret.len) };
-    print_wasm!("{ret:#?}");
+    let bytes = unsafe { crate::HostBytes::new(ret.ptr, ret.len) };
+    print_wasm!("{ret:?}");
+    print_wasm!("{:?}", &*bytes);
     match ret.kind {
         ResultKind::Ok => {
-            let result = schema::Term::decode(bytes);
-            let term = result.map_err(|e| e.to_string())?;
+            let term = schema::Term::decode(&*bytes);
+            let term = term.map_err(|e| e.to_string())?;
             let term = proto_id_to_token_term(&term).map_err(|e| e.to_string())?;
-            builder::Term::from_datalog(term, &tmp_table).map_err(|e| e.to_string())
+            let term = builder::Term::from_datalog(term, &tmp_table).map_err(|e| e.to_string());
+            print_wasm!("{term:?}");
+            term
         }
-        _ => Err(String::from_utf8_lossy(bytes).into_owned()),
+        _ => Err(String::from_utf8_lossy(&bytes).into_owned()),
     }
 }

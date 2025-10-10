@@ -27,3 +27,37 @@ pub fn free(ptr: *mut u8, size: usize, align: usize) {
 pub fn get_return_area() -> Box<WasmResult> {
     Box::new(unsafe { mem::zeroed() })
 }
+
+pub struct HostBytes {
+    ptr: *mut u8,
+    len: usize,
+}
+
+impl HostBytes {
+    pub(crate) unsafe fn new(ptr: *const u8, len: usize) -> Self {
+        Self {
+            ptr: ptr as *mut u8,
+            len,
+        }
+    }
+}
+
+impl std::ops::Deref for HostBytes {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        unsafe { core::slice::from_raw_parts(self.ptr, self.len) }
+    }
+}
+
+impl std::ops::DerefMut for HostBytes {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { core::slice::from_raw_parts_mut(self.ptr, self.len) }
+    }
+}
+
+impl std::ops::Drop for HostBytes {
+    fn drop(&mut self) {
+        crate::print_wasm!("HostBytes::drop");
+        free(self.ptr, self.len, 1)
+    }
+}

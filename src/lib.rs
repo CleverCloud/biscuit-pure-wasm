@@ -8,6 +8,8 @@ mod token;
 mod wasm_export;
 mod wasm_result;
 
+pub(crate) use allocation::HostBytes;
+
 #[allow(unused)]
 pub(crate) fn make_rng() -> rand::rngs::StdRng {
     let mut data = [0u8; 8];
