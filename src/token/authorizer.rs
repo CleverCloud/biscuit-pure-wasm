@@ -39,8 +39,8 @@ wasm_export!(
     fn authorizer_authorize(
         authorizer: &mut Authorizer,
         run_limits: Box<RunLimits>,
-    ) -> Result<u32, biscuit_auth::error::Token> {
-        Ok(authorizer.authorize_with_limits(*run_limits)? as u32)
+    ) -> Result<u64, biscuit_auth::error::Token> {
+        Ok(authorizer.authorize_with_limits(*run_limits)? as u64)
     }
 );
 
